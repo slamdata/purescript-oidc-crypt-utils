@@ -33,7 +33,7 @@ var saferReadPayload = function (jwt) {
 
 var saferVerifyJWT = function (idToken, rsaKey, acceptField) {
   try {
-    return jsrsasign.jws.JWS.verifyJWT(idToken, rsaKey, acceptField)
+    return jsrsasign.jws.JWS.verifyJWT(idToken, rsaKey, acceptField);
   } catch (e) {
     return false;
   }
@@ -86,4 +86,3 @@ exports.verifyIdToken = function (idToken) {
     };
   };
 };
-
