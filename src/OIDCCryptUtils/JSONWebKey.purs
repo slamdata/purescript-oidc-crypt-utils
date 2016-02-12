@@ -3,9 +3,8 @@ module OIDCCryptUtils.JSONWebKey (JSONWebKey()) where
 import Prelude (pure, (<<<))
 import Data.Argonaut as JS
 
-foreign import
-  data JSONWebKey :: *
+newtype JSONWebKey = JSONWebKey JS.Json
 
 instance decodeJsonJSONWebKey :: JS.DecodeJson JSONWebKey where
-  decodeJson = pure <<< Unsafe.Coerce.unsafeCoerce
+  decodeJson = pure <<< JSONWebKey
 
