@@ -1,0 +1,20 @@
+{
+  "name": "purescript-oidc-crypt-utils",
+  "version": "1.0.0",
+  "description": "Cryptographic utilities for performing OpenIDConnect as a client.",
+  "moduleType": [
+    "node"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-console": "^0.1.0",
+    "purescript-control": "^0.3.2",
+    "purescript-eff": "^0.1.2",
+    "purescript-maybe": "^0.3.5"
+  }
+}
