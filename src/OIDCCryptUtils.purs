@@ -2,6 +2,7 @@ module OIDCCryptUtils (RSASIGNTIME(), hashNonce, bindState, unbindState, verifyI
 
 import Control.Monad.Eff (Eff())
 import Data.Maybe (Maybe(..))
+import OIDCCryptUtils.JSONWebKey (JSONWebKey())
 
 foreign import
   data RSASIGNTIME :: !
@@ -22,12 +23,12 @@ foreign import
 -- | IdToken -> Issuer -> ClientID -> UnhashedNonce -> ProviderPublicKeyJWK -> Eff (...) Boolean
 foreign import
   verifyIdToken
-    :: forall eff rsaKey
+    :: forall eff
      . String
     -> String
     -> String
     -> String
-    -> {|rsaKey}
+    -> JSONWebKey
     -> Eff (rsaSignTime :: RSASIGNTIME | eff) Boolean
 
 foreign import

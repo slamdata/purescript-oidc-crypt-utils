@@ -25,7 +25,7 @@ StateString -> AnyString -> BoundStateJWS
 #### `verifyIdToken`
 
 ``` purescript
-verifyIdToken :: forall eff rsaKey. String -> String -> String -> String -> {  | rsaKey } -> Eff (rsaSignTime :: RSASIGNTIME | eff) Boolean
+verifyIdToken :: forall eff. String -> String -> String -> String -> JSONWebKey -> Eff (rsaSignTime :: RSASIGNTIME | eff) Boolean
 ```
 
 IdToken -> Issuer -> ClientID -> UnhashedNonce -> ProviderPublicKeyJWK -> Eff (...) Boolean

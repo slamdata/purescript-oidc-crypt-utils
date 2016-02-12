@@ -1,11 +1,15 @@
 module Test.Main where
 
-import Prelude (Unit, bind, (==), (/=))
+import Prelude (Unit, bind, (==), (/=), ($))
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE(), log)
 import Control.Monad.Eff.Exception (EXCEPTION(), throw)
 import Data.Maybe (Maybe(..))
 import OIDCCryptUtils (RSASIGNTIME(), hashNonce, bindState, unbindState, verifyIdToken)
+import OIDCCryptUtils.JSONWebKey (JSONWebKey())
+import Data.Either.Unsafe (fromRight)
+import Data.Argonaut.Decode (decodeJson)
+import Data.Argonaut.Parser (jsonParser)
 
 -- Token generated using https://jwt.io/
 -- JWK generated from public PEM using https://www.npmjs.com/package/pem-jwk
@@ -40,28 +44,25 @@ clientId = "945479264233-kumsko0q3e5eh3efd8pll1da9kua3i3b.apps.googleusercontent
 nonce :: String
 nonce = "hello"
 
-publicJWK :: { kty :: String, alg :: String, use :: String, kid :: String, n :: String, e :: String }
-publicJWK =
-  { kty: "RSA"
-  , alg: "RS256"
-  , use: "sig"
-  , kid: "1"
-  , n: "3ZWrUY0Y6IKN1qI4BhxR2C7oHVFgGPYkd38uGq1jQNSqEvJFcN93CYm16_G78FAFKWqwsJb3Wx-nbxDn6LtP4AhULB1H0K0g7_jLklDAHvI8yhOKlvoyvsUFPWtNxlJyh5JJXvkNKV_4Oo12e69f8QCuQ6NpEPl-cSvXIqUYBCs"
-  , e: "AQAB"
-  }
+publicJWKString :: String
+publicJWKString =
+  "{ \"kty\": \"RSA\", \"alg\": \"RS256\", \"use\": \"sig\", \"kid\": \"1\", \"n\": \"3ZWrUY0Y6IKN1qI4BhxR2C7oHVFgGPYkd38uGq1jQNSqEvJFcN93CYm16_G78FAFKWqwsJb3Wx-nbxDn6LtP4AhULB1H0K0g7_jLklDAHvI8yhOKlvoyvsUFPWtNxlJyh5JJXvkNKV_4Oo12e69f8QCuQ6NpEPl-cSvXIqUYBCs\", \"e\": \"AQAB\"}"
 
-wrongJWK :: { kty :: String, alg :: String, use :: String, kid :: String, n :: String, e :: String }
+wrongJWKString :: String
+wrongJWKString =
+  "{ \"kty\": \"RSA\", \"e\": \"AQAB\", \"use\": \"sig\", \"kid\": \"1\", \"alg\": \"RS256\", \"n\": \"xMX0alhWJsdoKQb3JN_FYD1L2dSgdCtvoaN5iXONgp_W6mEuRK1r7znEpINX_m-qE2hdz-7GT4NQ2x4pUAa-g3xJ7UxCmzIDXe2zxAbvwSBFIPDXBNiP5sUeKE9XmkdUKJ-CJuzy_TGu62kfJvXMdhT5kfeCxsKuaa_QYeOkMl0\"}"
+
+publicJWK :: JSONWebKey
+publicJWK =
+  fromRight $ decodeJson $ fromRight $ jsonParser publicJWKString
+
+wrongJWK :: JSONWebKey
 wrongJWK =
-  { kty: "RSA"
-  , e: "AQAB"
-  , use: "sig"
-  , kid: "1"
-  , alg: "RS256"
-  , n: "xMX0alhWJsdoKQb3JN_FYD1L2dSgdCtvoaN5iXONgp_W6mEuRK1r7znEpINX_m-qE2hdz-7GT4NQ2x4pUAa-g3xJ7UxCmzIDXe2zxAbvwSBFIPDXBNiP5sUeKE9XmkdUKJ-CJuzy_TGu62kfJvXMdhT5kfeCxsKuaa_QYeOkMl0"
-  }
+  fromRight $ decodeJson $ fromRight $ jsonParser wrongJWKString
 
 main :: forall e. Eff (console :: CONSOLE, rsaSignTime :: RSASIGNTIME, err :: EXCEPTION | e) Unit
 main = do
+  log "lol"
   if hashNonce nonce == hashNonce nonce
      then log "Equivalent hashed nonces are equal ✔︎"
      else throw "Equivalent hashed nonces aren't equal ✘"
