@@ -19,7 +19,7 @@ foreign import
     -> String
     -> String
 
--- | IdToken -> Issuer -> ClientID -> UnhashedNonce -> ProviderPublicKeyJWK
+-- | IdToken -> Issuer -> ClientID -> UnhashedNonce -> ProviderPublicKeyJWK -> Eff (...) Boolean
 foreign import
   verifyIdToken
     :: forall eff rsaKey

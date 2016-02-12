@@ -28,7 +28,7 @@ StateString -> AnyString -> BoundStateJWS
 verifyIdToken :: forall eff rsaKey. String -> String -> String -> String -> {  | rsaKey } -> Eff (rsaSignTime :: RSASIGNTIME | eff) Boolean
 ```
 
-IdToken -> Issuer -> ClientID -> UnhashedNonce -> ProviderPublicKeyJWK
+IdToken -> Issuer -> ClientID -> UnhashedNonce -> ProviderPublicKeyJWK -> Eff (...) Boolean
 
 #### `unbindState`
 
