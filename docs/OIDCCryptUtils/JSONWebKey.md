@@ -3,7 +3,7 @@
 #### `JSONWebKey`
 
 ``` purescript
-data JSONWebKey :: *
+newtype JSONWebKey
 ```
 
 ##### Instances
