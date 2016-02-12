@@ -1,48 +1,53 @@
-module OIDCCryptUtils (RSASIGNTIME(), hashNonce, bindState, unbindState, verifyIdToken) where
+module OIDCCryptUtils
+  ( RSASIGNTIME()
+  , hashNonce
+  , bindState
+  , unbindState
+  , verifyIdToken
+  , module OIDCCryptUtils.Types
+  , module OIDCCryptUtils.JSONWebKey
+  ) where
 
 import Control.Monad.Eff (Eff())
 import Data.Maybe (Maybe(..))
-import OIDCCryptUtils.JSONWebKey (JSONWebKey())
+import OIDCCryptUtils.JSONWebKey
+import OIDCCryptUtils.Types
 
 foreign import
   data RSASIGNTIME :: !
 
--- | UnhashedNonce -> HashedNonce
 foreign import
   hashNonce
-    :: String
-    -> String
+    :: UnhashedNonce
+    -> HashedNonce
 
--- | StateString -> AnyString -> BoundStateJWS
 foreign import
   bindState
-    :: String
-    -> String
-    -> String
+    :: StateString
+    -> KeyString
+    -> BoundStateJWS
 
--- | IdToken -> Issuer -> ClientID -> UnhashedNonce -> ProviderPublicKeyJWK -> Eff (...) Boolean
 foreign import
   verifyIdToken
     :: forall eff
-     . String
-    -> String
-    -> String
-    -> String
+     . IdToken
+    -> Issuer
+    -> ClientID
+    -> UnhashedNonce
     -> JSONWebKey
     -> Eff (rsaSignTime :: RSASIGNTIME | eff) Boolean
 
 foreign import
   _unbindState
-    :: Maybe String
-    -> (String -> Maybe String)
-    -> String
-    -> String
-    -> Maybe String
+    :: forall a
+     . Maybe a
+    -> (a -> Maybe a)
+    -> BoundStateJWS
+    -> KeyString
+    -> Maybe StateString
 
--- | BoundStateJWS -> AnyString -> Maybe StateString
 unbindState
-  :: String
-  -> String
-  -> Maybe String
+  :: BoundStateJWS
+  -> KeyString
+  -> Maybe StateString
 unbindState = _unbindState Nothing Just
-

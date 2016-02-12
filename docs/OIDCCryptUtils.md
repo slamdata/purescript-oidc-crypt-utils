@@ -9,33 +9,25 @@ data RSASIGNTIME :: !
 #### `hashNonce`
 
 ``` purescript
-hashNonce :: String -> String
+hashNonce :: UnhashedNonce -> HashedNonce
 ```
-
-UnhashedNonce -> HashedNonce
 
 #### `bindState`
 
 ``` purescript
-bindState :: String -> String -> String
+bindState :: StateString -> KeyString -> BoundStateJWS
 ```
-
-StateString -> AnyString -> BoundStateJWS
 
 #### `verifyIdToken`
 
 ``` purescript
-verifyIdToken :: forall eff. String -> String -> String -> String -> JSONWebKey -> Eff (rsaSignTime :: RSASIGNTIME | eff) Boolean
+verifyIdToken :: forall eff. IdToken -> Issuer -> ClientID -> UnhashedNonce -> JSONWebKey -> Eff (rsaSignTime :: RSASIGNTIME | eff) Boolean
 ```
-
-IdToken -> Issuer -> ClientID -> UnhashedNonce -> ProviderPublicKeyJWK -> Eff (...) Boolean
 
 #### `unbindState`
 
 ``` purescript
-unbindState :: String -> String -> Maybe String
+unbindState :: BoundStateJWS -> KeyString -> Maybe StateString
 ```
-
-BoundStateJWS -> AnyString -> Maybe StateString
 
 
