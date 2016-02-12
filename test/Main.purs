@@ -62,7 +62,6 @@ wrongJWK =
 
 main :: forall e. Eff (console :: CONSOLE, rsaSignTime :: RSASIGNTIME, err :: EXCEPTION | e) Unit
 main = do
-  log "lol"
   if hashNonce nonce == hashNonce nonce
      then log "Equivalent hashed nonces are equal ✔︎"
      else throw "Equivalent hashed nonces aren't equal ✘"
