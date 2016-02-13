@@ -152,4 +152,42 @@ Ord KeyString
 runKey :: KeyString -> String
 ```
 
+#### `KeyId`
+
+``` purescript
+newtype KeyId
+  = KeyId String
+```
+
+##### Instances
+``` purescript
+Eq KeyId
+Ord KeyId
+```
+
+#### `runKeyId`
+
+``` purescript
+runKeyId :: KeyId -> String
+```
+
+#### `Email`
+
+``` purescript
+newtype Email
+  = Email String
+```
+
+##### Instances
+``` purescript
+Eq Email
+Ord Email
+```
+
+#### `runEmail`
+
+``` purescript
+runEmail :: Email -> String
+```
+
 

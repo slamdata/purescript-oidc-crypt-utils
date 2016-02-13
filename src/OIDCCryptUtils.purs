@@ -4,6 +4,8 @@ module OIDCCryptUtils
   , bindState
   , unbindState
   , verifyIdToken
+  , pluckKeyId
+  , pluckEmail
   , module OIDCCryptUtils.Types
   , module OIDCCryptUtils.JSONWebKey
   ) where
@@ -46,8 +48,34 @@ foreign import
     -> KeyString
     -> Maybe StateString
 
+foreign import
+  _pluckKeyId
+    :: forall a
+     . Maybe a
+    -> (a -> Maybe a)
+    -> IdToken
+    -> Maybe KeyId
+
+foreign import
+  _pluckEmail
+    :: forall a
+     . Maybe a
+    -> (a -> Maybe a)
+    -> IdToken
+    -> Maybe Email
+
 unbindState
   :: BoundStateJWS
   -> KeyString
   -> Maybe StateString
 unbindState = _unbindState Nothing Just
+
+pluckKeyId
+  :: IdToken
+  -> Maybe KeyId
+pluckKeyId = _pluckKeyId Nothing Just
+
+pluckEmail
+  :: IdToken
+  -> Maybe Email
+pluckEmail = _pluckEmail Nothing Just

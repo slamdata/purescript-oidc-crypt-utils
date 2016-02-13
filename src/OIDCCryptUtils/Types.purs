@@ -80,3 +80,23 @@ instance eqKeyString :: Eq KeyString where
   eq (KeyString s) (KeyString ss) = s == ss
 instance ordKeyString :: Ord KeyString where
   compare (KeyString s) (KeyString ss) = compare s ss
+
+
+newtype KeyId = KeyId String
+runKeyId :: KeyId -> String
+runKeyId (KeyId s) = s
+
+instance eqKeyId :: Eq KeyId where
+  eq (KeyId s) (KeyId ss) = s == ss
+instance ordKeyId :: Ord KeyId where
+  compare (KeyId s) (KeyId ss) = compare s ss
+
+
+newtype Email = Email String
+runEmail :: Email -> String
+runEmail (Email s) = s
+
+instance eqEmail :: Eq Email where
+  eq (Email s) (Email ss) = s == ss
+instance ordEmail :: Ord Email where
+  compare (Email s) (Email ss) = compare s ss
