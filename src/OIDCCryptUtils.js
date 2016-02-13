@@ -31,6 +31,14 @@ var saferReadPayload = function (jwt) {
   }
 };
 
+var saferReadHeader = function (jwt) {
+  try {
+    return jsrsasign.jws.JWS.readSafeJSONString(jsrsasign.b64utoutf8(jwt.split(".")[0]));
+  } catch (e) {
+    return {};
+  }
+};
+
 var saferVerifyJWT = function (idToken, rsaKey, acceptField) {
   try {
     return jsrsasign.jws.JWS.verifyJWT(idToken, rsaKey, acceptField);
@@ -83,6 +91,24 @@ exports.verifyIdToken = function (idToken) {
           };
         };
       };
+    };
+  };
+};
+
+exports._pluckKeyId = function (nothing) {
+  return function (just) {
+    return function (idToken) {
+      var header = saferReadHeader(idToken);
+      return ("kid" in header) ? just(header["kid"]) : nothing;
+    };
+  };
+};
+
+exports._pluckEmail = function (nothing) {
+  return function (just) {
+    return function (idToken) {
+      var payload = saferReadPayload(idToken);
+      return ("email" in payload) ? just(payload["email"]) : nothing;
     };
   };
 };

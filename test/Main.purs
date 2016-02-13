@@ -5,7 +5,7 @@ import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Console (CONSOLE(), log)
 import Control.Monad.Eff.Exception (EXCEPTION(), throw)
 import Data.Maybe (Maybe(..))
-import OIDCCryptUtils -- we're testing everything here
+import OIDCCryptUtils
 import Data.Either.Unsafe (fromRight)
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Parser (jsonParser)
@@ -24,6 +24,20 @@ idTokenWithMultipleAudiences =
 idTokenWithMultipleAudiencesWhichDontMatchTheAzp :: IdToken
 idTokenWithMultipleAudiencesWhichDontMatchTheAzp =
   IdToken "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiYXVkMSIsImF1ZDIiXSwiYXpwIjoiYXVkMyIsImVtYWlsIjoiYmVja3lAc2xhbWRhdGEuY29tIiwiaXNzIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwibm9uY2UiOiI1ZDQxNDAyYWJjNGIyYTc2Yjk3MTlkOTExMDE3YzU5MiIsImV4cCI6MjUyNDYwODAwMCwiaWF0IjoxNDU1MDY5MzQ4LCJzdWIiOiIxMDc2MTA3NzY5NTEwOTg2NDM5NTAifQ.Cs10otwS9hvhYgBZ8yK8Au9Aki7r9OQIFv8o9p9zflPygulaaeLetA3EpJGey9Zm4vyB7hoqhhTx0-2Lv3cop22dp_Ne-X2BF-JoaiddI8I-kVwpm_-hBE2LW3EmGttFgSRZp70-iH65PP1HOiUz1abU8hpfk0VYLjpEJPadYyQ"
+
+idTokenWithKeyId :: IdToken
+idTokenWithKeyId =
+  IdToken "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImE0MTYzNjE5NDIzZGNkM2E3MzYxYWNmMmE2NDFiZjZmN2M5ZTQ4OGEifQ.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.NEA7RBDBNfaRjsL4ateAvQ28ovlo-4dM-5W3TISCMYGoAW_qmtJpq2SxsLMgsuXJcwlKXoxJGih5g5YA6b92YA8YpymV-LpTni7niK_STskroFJqB-J75Uc4TX9rJIg1_9AeBiw6nR5ZMLTq3DtpjGCojk-ZUw6Y526UHD0PgMg"
+
+idTokenWithEmail :: IdToken
+idTokenWithEmail =
+  IdToken "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImVtYWlsIjoiYmVja3lAc2xhbWRhdGEuY29tIn0.prVDiSG7841kXU1NGTbIKG8i8amR21MBzer9Gu3gEo44FxlzKv8o16nchDjiBSdkfZoYjWsryW-y7E3KSfLWRhgN2IWVi0_ias4s5kJ4lLO1RzWx2WLiseG4KgSMnNWB0fMVKSBiZ8zqj5QxyiihAWLEanvdcebIhYwAAuQastQ"
+
+expectedKeyId :: KeyId
+expectedKeyId = KeyId "a4163619423dcd3a7361acf2a641bf6f7c9e488a"
+
+expectedEmail :: Email
+expectedEmail = Email "becky@slamdata.com"
 
 azp :: ClientID
 azp =
@@ -95,6 +109,28 @@ main = do
   case unbindState (bindState state stateKey) (KeyString "Wrong key") of
     Nothing -> log "State wasn't unbound with the wrong key ✔︎"
     Just _ -> throw "State was unbound with the wrong key ✘"
+
+  case pluckKeyId idTokenWithKeyId of
+    Just keyId ->
+      if keyId == expectedKeyId
+        then log "Key id succesfully plucked ✔︎"
+        else throw "Incorrect key id plucked ✘"
+    Nothing -> throw "Key id wasn't plucked ✘"
+
+  case pluckKeyId idTokenWithEmail of
+    Nothing -> log "Key id wasn't plucked when there wasn't one there ✔︎"
+    Just keyId -> throw "A key id was plucked somehow even though its not in the token ✘"
+
+  case pluckEmail idTokenWithEmail of
+    Just email ->
+      if email == expectedEmail
+        then log "Email succesfully plucked ✔︎"
+        else throw "Incorrect email plucked ✘"
+    Nothing -> throw "Email wasn't plucked ✘"
+
+  case pluckEmail idTokenWithKeyId of
+    Nothing -> log "Email wasn't plucked when there wasn't one there ✔︎"
+    Just email -> throw "An email was plucked somehow even though its not in the token ✘"
 
   verified <-
     verifyIdToken
