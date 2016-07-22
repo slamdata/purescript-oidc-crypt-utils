@@ -7,12 +7,12 @@ module OIDCCryptUtils
   , pluckKeyId
   , pluckEmail
   , module OIDCCryptUtils.Types
-  , module OIDCCryptUtils.JSONWebKey
+  , module J
   ) where
 
 import Control.Monad.Eff (Eff())
 import Data.Maybe (Maybe(..))
-import OIDCCryptUtils.JSONWebKey
+import OIDCCryptUtils.JSONWebKey as J
 import OIDCCryptUtils.Types
 
 foreign import
@@ -36,7 +36,7 @@ foreign import
     -> Issuer
     -> ClientID
     -> UnhashedNonce
-    -> JSONWebKey
+    -> J.JSONWebKey
     -> Eff (rsaSignTime :: RSASIGNTIME | eff) Boolean
 
 foreign import

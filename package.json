@@ -1,25 +1,18 @@
 {
-  "name": "purescript-oidc-crypt-utils",
-  "version": "1.0.0",
-  "description": "Cryptographic utilities for performing OpenIDConnect as a client.",
-  "directories": {
-    "test": "test"
+  "private": true,
+  "scripts": {
+    "postinstall": "bower install",
+    "clean": "rimraf output && rimraf .pulp-cache",
+    "build": "pulp build --censor-lib --strict",
+    "test": "pulp test"
   },
   "dependencies": {
     "jsrsasign": "^5.0.5"
   },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://www.github.com/slamdata/purescript-oidc-crypt-utils"
-  },
-  "keywords": [
-    "oidc",
-    "purescript",
-    "cryptography"
-  ],
-  "license": "Apache-2.0"
+  "devDependencies": {
+    "pulp": "^9.0.1",
+    "purescript": "^0.9.1",
+    "purescript-psa": "^0.3.9",
+    "rimraf": "^2.5.2"
+  }
 }

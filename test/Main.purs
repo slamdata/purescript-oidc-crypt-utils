@@ -6,9 +6,10 @@ import Control.Monad.Eff.Console (CONSOLE(), log)
 import Control.Monad.Eff.Exception (EXCEPTION(), throw)
 import Data.Maybe (Maybe(..))
 import OIDCCryptUtils
-import Data.Either.Unsafe (fromRight)
+import Data.Either (fromRight)
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Parser (jsonParser)
+import Partial.Unsafe (unsafePartial)
 
 -- Token generated using https://jwt.io/
 -- JWK generated from public PEM using https://www.npmjs.com/package/pem-jwk
@@ -81,11 +82,11 @@ wrongJWKString =
 
 publicJWK :: JSONWebKey
 publicJWK =
-  fromRight $ decodeJson $ fromRight $ jsonParser publicJWKString
+  unsafePartial $ fromRight $ decodeJson $ fromRight $ jsonParser publicJWKString
 
 wrongJWK :: JSONWebKey
 wrongJWK =
-  fromRight $ decodeJson $ fromRight $ jsonParser wrongJWKString
+  unsafePartial $ fromRight $ decodeJson $ fromRight $ jsonParser wrongJWKString
 
 main
   :: forall e
