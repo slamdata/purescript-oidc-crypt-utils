@@ -1,4 +1,4 @@
-module OIDCCryptUtils.Types where
+module OIDC.Crypt.Types where
 
 import Prelude
 

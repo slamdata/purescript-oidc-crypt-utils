@@ -1,22 +1,28 @@
-// module OIDCCryptUtils
+"use strict";
 
 var jsrsasign = require("jsrsasign");
 
+var hashNonce = function (nonce) {
+  return jsrsasign.crypto.Util.md5(nonce);
+};
+
+exports.hashNonce = hashNonce;
+
 var verifiedNonce = function (nonce) {
   return function (payload) {
-    return ("nonce" in payload) ? payload["nonce"] === hashNonce(nonce) : false;
+    return "nonce" in payload ? payload.nonce === hashNonce(nonce) : false;
   };
 };
 
 var verifiedAud = function (clientId) {
   return function (payload) {
-    var aud = ("aud" in payload) ? payload["aud"] : [];
+    var aud = "aud" in payload ? payload.aud : [];
 
     var arrayAud = Array.isArray(aud);
     var multipleAud = arrayAud && aud.length > 0;
-    var clientIdInMultipleAud = (multipleAud) ? aud.indexOf(clientId) !== -1 : false;
+    var clientIdInMultipleAud = multipleAud ? aud.indexOf(clientId) !== -1 : false;
 
-    var verifiedAzp = ("azp" in payload) ? payload["azp"] == clientId : true;
+    var verifiedAzp = "azp" in payload ? payload.azp === clientId : true;
     var verifiedSingleAud = aud === clientId;
     var verifiedMultipleAud = verifiedAzp && clientIdInMultipleAud;
     return (verifiedSingleAud || verifiedMultipleAud) && verifiedAzp;
@@ -39,6 +45,7 @@ var saferReadHeader = function (jwt) {
   }
 };
 
+// jshint maxparams: 3
 var saferVerifyJWT = function (idToken, rsaKey, acceptField) {
   try {
     return jsrsasign.jws.JWS.verifyJWT(idToken, rsaKey, acceptField);
@@ -46,12 +53,7 @@ var saferVerifyJWT = function (idToken, rsaKey, acceptField) {
     return false;
   }
 };
-
-var hashNonce = function (nonce) {
-  return jsrsasign.crypto.Util.md5(nonce);
-};
-
-exports.hashNonce = hashNonce;
+// jshint maxparams: 1
 
 exports.bindState = function (state) {
   return function (key) {
@@ -64,7 +66,7 @@ exports._unbindState = function (nothing) {
     return function (boundState) {
       return function (key) {
         var boundStatePayload = jsrsasign.b64utoutf8(boundState.split(".")[1]);
-        if (jsrsasign.jws.JWS.verify(boundState, key, ['HS256'])) {
+        if (jsrsasign.jws.JWS.verify(boundState, key, ["HS256"])) {
           return just(boundStatePayload);
         } else {
           return nothing;
@@ -99,7 +101,7 @@ exports._pluckKeyId = function (nothing) {
   return function (just) {
     return function (idToken) {
       var header = saferReadHeader(idToken);
-      return ("kid" in header) ? just(header["kid"]) : nothing;
+      return "kid" in header ? just(header.kid) : nothing;
     };
   };
 };
@@ -108,7 +110,7 @@ exports._pluckEmail = function (nothing) {
   return function (just) {
     return function (idToken) {
       var payload = saferReadPayload(idToken);
-      return ("email" in payload) ? just(payload["email"]) : nothing;
+      return "email" in payload ? just(payload.email) : nothing;
     };
   };
 };
