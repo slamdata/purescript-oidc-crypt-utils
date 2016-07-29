@@ -1,6 +1,7 @@
-module OIDCCryptUtils.JSONWebKey (JSONWebKey()) where
+module OIDC.Crypt.JSONWebKey (JSONWebKey) where
 
-import Prelude (pure, (<<<))
+import Prelude
+
 import Data.Argonaut.Core as JS
 import Data.Argonaut.Decode as JSD
 import Data.Argonaut.Encode as JSE

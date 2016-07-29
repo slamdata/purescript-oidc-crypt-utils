@@ -1,11 +1,11 @@
 module Test.Main where
 
-import Prelude (Unit(), bind, (==), (/=), ($))
-import Control.Monad.Eff (Eff())
-import Control.Monad.Eff.Console (CONSOLE(), log)
-import Control.Monad.Eff.Exception (EXCEPTION(), throw)
+import Prelude (Unit, bind, (==), (/=), ($))
+import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Console (CONSOLE, log)
+import Control.Monad.Eff.Exception (EXCEPTION, throw)
 import Data.Maybe (Maybe(..))
-import OIDCCryptUtils
+import OIDC.Crypt
 import Data.Either (fromRight)
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Parser (jsonParser)

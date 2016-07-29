@@ -1,19 +1,19 @@
-module OIDCCryptUtils
-  ( RSASIGNTIME()
+module OIDC.Crypt
+  ( RSASIGNTIME
   , hashNonce
   , bindState
   , unbindState
   , verifyIdToken
   , pluckKeyId
   , pluckEmail
-  , module OIDCCryptUtils.Types
+  , module OIDC.Crypt.Types
   , module J
   ) where
 
-import Control.Monad.Eff (Eff())
+import Control.Monad.Eff (Eff)
 import Data.Maybe (Maybe(..))
-import OIDCCryptUtils.JSONWebKey as J
-import OIDCCryptUtils.Types
+import OIDC.Crypt.JSONWebKey as J
+import OIDC.Crypt.Types
 
 foreign import
   data RSASIGNTIME :: !

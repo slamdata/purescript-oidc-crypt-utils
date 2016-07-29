@@ -1,6 +1,8 @@
-/bower_components/
-/node_modules/
-/.pulp-cache/
-/output/
-/.psci*
-/src/.webpack.js
+/.*
+!/.gitignore
+!/.jscsrc
+!/.jshintrc
+!/.travis.yml
+bower_components/
+node_modules/
+output/
