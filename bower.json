@@ -1,11 +1,19 @@
 {
   "name": "purescript-oidc-crypt-utils",
   "description": "Cryptographic utilities for performing OpenIDConnect as a client.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/slamdata/purescript-oidc-crypt-utils.git"
+  },
   "ignore": [
     "**/.*",
-    "node_modules",
     "bower_components",
-    "output"
+    "node_modules",
+    "output",
+    "test",
+    "bower.json",
+    "package.json"
   ],
   "dependencies": {
     "purescript-console": "^1.0.0",

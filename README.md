@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.org/slamdata/purescript-oidc-crypt-utils.svg?branch=master)](https://travis-ci.org/slamdata/purescript-oidc-crypt-utils)
 [![Dependency Status](https://www.versioneye.com/user/projects/579b3b303815c80028e2f468/badge.svg?style=flat)](https://www.versioneye.com/user/projects/579b3b303815c80028e2f468)
 
-Utilities for working with OIDC tokens.
+Cryptographic utilities for performing OpenIDConnect as a client.
 
 ## Installation
 
