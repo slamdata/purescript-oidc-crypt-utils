@@ -6,7 +6,7 @@ import Control.Monad.Eff.Console (CONSOLE, log)
 import Control.Monad.Eff.Exception (EXCEPTION, throw)
 import Data.Maybe (Maybe(..))
 import OIDC.Crypt
-import Data.Either (fromRight)
+import Data.Either (Either(Right), fromRight)
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Parser (jsonParser)
 import Partial.Unsafe (unsafePartial)
@@ -111,25 +111,29 @@ main = do
     Nothing -> log "State wasn't unbound with the wrong key ✔︎"
     Just _ -> throw "State was unbound with the wrong key ✘"
 
-  case pluckKeyId idTokenWithKeyId of
+  headerWithKeyId <- readHeader idTokenWithKeyId
+  case pluckKeyId headerWithKeyId of
     Just keyId ->
       if keyId == expectedKeyId
         then log "Key id succesfully plucked ✔︎"
         else throw "Incorrect key id plucked ✘"
     Nothing -> throw "Key id wasn't plucked ✘"
 
-  case pluckKeyId idTokenWithEmail of
+  headerWithEmail <- readHeader idTokenWithEmail
+  case pluckKeyId headerWithEmail of
     Nothing -> log "Key id wasn't plucked when there wasn't one there ✔︎"
     Just keyId -> throw "A key id was plucked somehow even though its not in the token ✘"
 
-  case pluckEmail idTokenWithEmail of
+  payloadWithEmail <- readPayload idTokenWithEmail
+  case pluckEmail payloadWithEmail of
     Just email ->
       if email == expectedEmail
         then log "Email succesfully plucked ✔︎"
         else throw "Incorrect email plucked ✘"
     Nothing -> throw "Email wasn't plucked ✘"
 
-  case pluckEmail idTokenWithKeyId of
+  payloadWithKeyId <- readPayload idTokenWithKeyId
+  case pluckEmail payloadWithKeyId of
     Nothing -> log "Email wasn't plucked when there wasn't one there ✔︎"
     Just email -> throw "An email was plucked somehow even though its not in the token ✘"
 
@@ -140,9 +144,9 @@ main = do
       clientId
       helloNonce
       publicJWK
-  if verified
-     then log "Token was verified with correct key and claims ✔︎"
-     else throw "Token was rejected despite correct key and claims ✘"
+  case verified of
+     Right true -> log "Token was verified with correct key and claims ✔︎"
+     _ -> throw "Token was rejected despite correct key and claims ✘"
 
   verifiedDespiteIncorrectKey <-
     verifyIdToken
@@ -151,9 +155,9 @@ main = do
       clientId
       helloNonce
       wrongJWK
-  if verifiedDespiteIncorrectKey
-     then throw "Token was verified with incorrect key ✘"
-     else log "Token was rejected with incorrect key ✔︎"
+  case verifiedDespiteIncorrectKey of
+     Right true -> throw "Token was verified with incorrect key ✘"
+     _ -> log "Token was rejected with incorrect key ✔︎"
 
   verifiedDespiteWeirdKey <-
     verifyIdToken
@@ -162,9 +166,9 @@ main = do
       clientId
       helloNonce
       publicJWK
-  if verifiedDespiteWeirdKey
-     then throw "Incorrect token was verified ✘"
-     else log "Token was rejected with weird key and didn't leak an exception ✔︎"
+  case verifiedDespiteWeirdKey of
+     Right true -> throw "Incorrect token was verified ✘"
+     _ -> log "Token was rejected with weird key and didn't leak an exception ✔︎"
 
   verifiedDespiteIncorrectReplay <-
     verifyIdToken
@@ -173,9 +177,9 @@ main = do
       clientId
       goodbyeNonce
       publicJWK
-  if verifiedDespiteIncorrectReplay
-     then throw "Token was verified with incorrect nonce ✘"
-     else log "Token was rejected with incorrect nonce ✔︎"
+  case verifiedDespiteIncorrectReplay of
+     Right true -> throw "Token was verified with incorrect nonce ✘"
+     _ -> log "Token was rejected with incorrect nonce ✔︎"
 
   verifiedDespiteIncorrectAudience <-
     verifyIdToken
@@ -184,9 +188,9 @@ main = do
       (ClientID "Wrong client id")
       helloNonce
       publicJWK
-  if verifiedDespiteIncorrectAudience
-     then throw "Token was verified with incorrect client id ✘"
-     else log "Token was rejected with incorrect client id ✔︎"
+  case verifiedDespiteIncorrectAudience of
+     Right true -> throw "Token was verified with incorrect client id ✘"
+     _ -> log "Token was rejected with incorrect client id ✔︎"
 
   verifiedDespiteIncorrectIssuer <-
     verifyIdToken
@@ -195,9 +199,9 @@ main = do
       clientId
       helloNonce
       publicJWK
-  if verifiedDespiteIncorrectIssuer
-     then throw "Token was verified with incorrect issuer ✘"
-     else log "Token was rejected with incorrect issuer ✔︎"
+  case verifiedDespiteIncorrectIssuer of
+     Right true -> throw "Token was verified with incorrect issuer ✘"
+     _ -> log "Token was rejected with incorrect issuer ✔︎"
 
   verifiedMultipleAud <-
     verifyIdToken
@@ -206,9 +210,9 @@ main = do
       azp
       helloNonce
       publicJWK
-  if verifiedMultipleAud
-     then log "Token with multiple audiences was verified with correct key and claims ✔︎"
-     else throw "Token with multiple audiences was rejected despite correct key and claims ✘"
+  case verifiedMultipleAud of
+     Right true -> log "Token with multiple audiences was verified with correct key and claims ✔︎"
+     _ -> throw "Token with multiple audiences was rejected despite correct key and claims ✘"
 
   verifiedDespiteIncorrectAzp <-
     verifyIdToken
@@ -217,6 +221,6 @@ main = do
       clientId
       helloNonce
       publicJWK
-  if verifiedDespiteIncorrectAzp
-     then throw "Token with multiple audiences was verified despite incorrect azp ✘"
-     else log "Token with multiple audiences was rejected due to incorrect azp ✔︎"
+  case verifiedDespiteIncorrectAzp of
+     Right true -> throw "Token with multiple audiences was verified despite incorrect azp ✘"
+     _ -> log "Token with multiple audiences was rejected due to incorrect azp ✔︎"

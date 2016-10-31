@@ -2,19 +2,51 @@
 
 var jsrsasign = require("jsrsasign");
 
-var hashNonce = function (nonce) {
-  return jsrsasign.crypto.Util.md5(nonce);
-};
+// Effectful
 
-exports.hashNonce = hashNonce;
-
-var verifiedNonce = function (nonce) {
-  return function (payload) {
-    return "nonce" in payload ? payload.nonce === hashNonce(nonce) : false;
+exports.readPayload = function (jwt) {
+  return function () {
+    return jsrsasign.jws.JWS.readSafeJSONString(jsrsasign.b64utoutf8(jwt.split(".")[1]));
   };
 };
 
-var verifiedAud = function (clientId) {
+exports.readHeader = function (jwt) {
+  return function () {
+    return jsrsasign.jws.JWS.readSafeJSONString(jsrsasign.b64utoutf8(jwt.split(".")[0]));
+  };
+};
+
+exports.verifyJWT = function (idToken) {
+  return function (rsaKey) {
+    return function (acceptedFields) {
+      return function () {
+        return jsrsasign.jws.JWS.verifyJWT(idToken, rsaKey, acceptedFields);
+      };
+    };
+  };
+};
+
+// Uneffectful
+
+exports.hashNonce = function (nonce) {
+  return jsrsasign.crypto.Util.md5(nonce);
+};
+
+exports.bindState = function (state) {
+  return function (key) {
+    return jsrsasign.jws.JWS.sign(null, { alg: "HS256", cty: "JWT" }, state, key);
+  };
+};
+
+exports.getKey = jsrsasign.KEYUTIL.getKey;
+
+exports.verifyNonce = function (unhashedNonce) {
+  return function (payload) {
+    return "nonce" in payload ? payload.nonce === exports.hashNonce(unhashedNonce) : false;
+  };
+};
+
+exports.verifyAudience = function (clientId) {
   return function (payload) {
     var aud = "aud" in payload ? payload.aud : [];
 
@@ -26,38 +58,6 @@ var verifiedAud = function (clientId) {
     var verifiedSingleAud = aud === clientId;
     var verifiedMultipleAud = verifiedAzp && clientIdInMultipleAud;
     return (verifiedSingleAud || verifiedMultipleAud) && verifiedAzp;
-  };
-};
-
-var saferReadPayload = function (jwt) {
-  try {
-    return jsrsasign.jws.JWS.readSafeJSONString(jsrsasign.b64utoutf8(jwt.split(".")[1]));
-  } catch (e) {
-    return {};
-  }
-};
-
-var saferReadHeader = function (jwt) {
-  try {
-    return jsrsasign.jws.JWS.readSafeJSONString(jsrsasign.b64utoutf8(jwt.split(".")[0]));
-  } catch (e) {
-    return {};
-  }
-};
-
-// jshint maxparams: 3
-var saferVerifyJWT = function (idToken, rsaKey, acceptField) {
-  try {
-    return jsrsasign.jws.JWS.verifyJWT(idToken, rsaKey, acceptField);
-  } catch (e) {
-    return false;
-  }
-};
-// jshint maxparams: 1
-
-exports.bindState = function (state) {
-  return function (key) {
-    return jsrsasign.jws.JWS.sign(null, { alg: "HS256", cty: "JWT" }, state, key);
   };
 };
 
@@ -76,41 +76,18 @@ exports._unbindState = function (nothing) {
   };
 };
 
-exports.verifyIdToken = function (idToken) {
-  return function (issuer) {
-    return function (clientId) {
-      return function (nonce) {
-        return function (providerPublicKey) {
-          return function () {
-            var rsaKey = jsrsasign.KEYUTIL.getKey(providerPublicKey);
-            var payload = saferReadPayload(idToken);
-            var acceptField = { alg: ["RS256"], iss: [issuer] };
-            if (saferVerifyJWT(idToken, rsaKey, acceptField)) {
-              return verifiedNonce(nonce)(payload) && verifiedAud(clientId)(payload);
-            } else {
-              return false;
-            }
-          };
-        };
-      };
+exports._pluckEmail = function (nothing) {
+  return function (just) {
+    return function (payload) {
+      return "email" in payload ? just(payload.email) : nothing;
     };
   };
 };
 
 exports._pluckKeyId = function (nothing) {
   return function (just) {
-    return function (idToken) {
-      var header = saferReadHeader(idToken);
+    return function (header) {
       return "kid" in header ? just(header.kid) : nothing;
-    };
-  };
-};
-
-exports._pluckEmail = function (nothing) {
-  return function (just) {
-    return function (idToken) {
-      var payload = saferReadPayload(idToken);
-      return "email" in payload ? just(payload.email) : nothing;
     };
   };
 };
