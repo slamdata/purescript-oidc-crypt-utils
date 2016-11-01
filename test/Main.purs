@@ -12,8 +12,10 @@ import Data.Argonaut.Parser (jsonParser)
 import Partial.Unsafe (unsafePartial)
 
 -- Token generated using https://jwt.io/
+-- At http://jwt.io select RS256 and use default public and private PEMs to
+-- create new tokens.
 -- JWK generated from public PEM using https://www.npmjs.com/package/pem-jwk
--- idToken (and therefore tests) valid until 2050 ; )
+-- Id token (and therefore tests) valid until 2050 ; )
 idToken :: IdToken
 idToken =
   IdToken "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI5NDU0NzkyNjQyMzMta3Vtc2tvMHEzZTVlaDNlZmQ4cGxsMWRhOWt1YTNpM2IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhenAiOiI5NDU0NzkyNjQyMzMta3Vtc2tvMHEzZTVlaDNlZmQ4cGxsMWRhOWt1YTNpM2IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJlbWFpbCI6ImJlY2t5QHNsYW1kYXRhLmNvbSIsImlzcyI6Imh0dHBzOi8vYWNjb3VudHMuZ29vZ2xlLmNvbSIsIm5vbmNlIjoiNWQ0MTQwMmFiYzRiMmE3NmI5NzE5ZDkxMTAxN2M1OTIiLCJleHAiOjI1MjQ2MDgwMDAsImlhdCI6MTQ1NTA2OTM0OCwic3ViIjoiMTA3NjEwNzc2OTUxMDk4NjQzOTUwIn0.PUi5wySBaUSBt9lepycGton2_-plIaX14q19NB13GF8ISa9gUwnt4LeHWPst42jBeAO1GJ_thIYm6gQIIKBMtr0hucddfzu7oWXfobeFke-WwBHgmFIKSccWhI-QoNxmDbJkNolo_oPsu3DcOpFHKrnmrTWuQFZpdYciGpYi72k"
@@ -33,6 +35,10 @@ idTokenWithKeyId =
 idTokenWithEmail :: IdToken
 idTokenWithEmail =
   IdToken "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImVtYWlsIjoiYmVja3lAc2xhbWRhdGEuY29tIn0.prVDiSG7841kXU1NGTbIKG8i8amR21MBzer9Gu3gEo44FxlzKv8o16nchDjiBSdkfZoYjWsryW-y7E3KSfLWRhgN2IWVi0_ias4s5kJ4lLO1RzWx2WLiseG4KgSMnNWB0fMVKSBiZ8zqj5QxyiihAWLEanvdcebIhYwAAuQastQ"
+
+idTokenIssuedInTheFuture :: IdToken
+idTokenIssuedInTheFuture =
+  IdToken "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI5NDU0NzkyNjQyMzMta3Vtc2tvMHEzZTVlaDNlZmQ4cGxsMWRhOWt1YTNpM2IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhenAiOiI5NDU0NzkyNjQyMzMta3Vtc2tvMHEzZTVlaDNlZmQ4cGxsMWRhOWt1YTNpM2IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJlbWFpbCI6ImJlY2t5QHNsYW1kYXRhLmNvbSIsImlzcyI6Imh0dHBzOi8vYWNjb3VudHMuZ29vZ2xlLmNvbSIsIm5vbmNlIjoiNWQ0MTQwMmFiYzRiMmE3NmI5NzE5ZDkxMTAxN2M1OTIiLCJleHAiOjI1MjQ2OTQ0MDAsImlhdCI6MjUyNDYwODAwMCwic3ViIjoiMTA3NjEwNzc2OTUxMDk4NjQzOTUwIn0.hLUN9izbGLxaCOaL9x4x9gnO07WtNpHdnoAfP1HzOi3m-xeiyOKrGcVB8Y8PHlfUguhdAfKIzgLRrs_qPPBxlH_KFQnBlrpIE4dE8Jlyvfw6OEgr9V4wDSkxsqntUVE_LPc-L5kKkhHDWrTUS5S08iN2Lm9OYTzlOcyMraWE4As"
 
 expectedKeyId :: KeyId
 expectedKeyId = KeyId "a4163619423dcd3a7361acf2a641bf6f7c9e488a"
@@ -224,3 +230,14 @@ main = do
   case verifiedDespiteIncorrectAzp of
      Right true -> throw "Token with multiple audiences was verified despite incorrect azp ✘"
      _ -> log "Token with multiple audiences was rejected due to incorrect azp ✔︎"
+
+  verifiedDespiteBeingIssuedInTheFuture <-
+    verifyIdToken
+      idTokenIssuedInTheFuture
+      issuer
+      clientId
+      helloNonce
+      publicJWK
+  case verifiedDespiteBeingIssuedInTheFuture of
+     Right true -> throw "Token was verified despite being issued in the future ✘"
+     _ -> log "Token was rejected due to being issued in the future ✔︎"

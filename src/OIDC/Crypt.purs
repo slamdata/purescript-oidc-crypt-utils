@@ -144,5 +144,5 @@ verifyIdToken idToken issuer clientId unhashedNonce providerPublicKey =
       (Exception.throw "Nonce doesn't match, possible replay attack.")
     when
       (not $ verifyAudience clientId payload)
-      (Exception.throw "Audience doesn't match.")
+      (Exception.throw "Audience (client id) doesn't match.")
     verifyJWT idToken (getKey providerPublicKey) { alg: ["RS256"], iss: [issuer] }
