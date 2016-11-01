@@ -1,19 +1,26 @@
 module Test.Main where
 
-import Prelude (Unit, bind, (==), (/=), ($))
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE, log)
 import Control.Monad.Eff.Exception (EXCEPTION, throw)
-import Data.Maybe (Maybe(..))
-import OIDC.Crypt
-import Data.Either (fromRight)
+import Control.Monad.Eff.Now (NOW)
+import Data.Time.Duration (Seconds(Seconds))
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Parser (jsonParser)
+import Data.Either (Either(Right), fromRight)
+import Data.Maybe (Maybe(..))
+import OIDC.Crypt
 import Partial.Unsafe (unsafePartial)
+import Prelude (Unit, bind, (==), (/=), ($))
+
+gracePeriod :: Seconds
+gracePeriod = Seconds 1.0
 
 -- Token generated using https://jwt.io/
+-- At http://jwt.io select RS256 and use default public and private PEMs to
+-- create new tokens.
 -- JWK generated from public PEM using https://www.npmjs.com/package/pem-jwk
--- idToken (and therefore tests) valid until 2050 ; )
+-- Id token (and therefore tests) valid until 2050 ; )
 idToken :: IdToken
 idToken =
   IdToken "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI5NDU0NzkyNjQyMzMta3Vtc2tvMHEzZTVlaDNlZmQ4cGxsMWRhOWt1YTNpM2IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhenAiOiI5NDU0NzkyNjQyMzMta3Vtc2tvMHEzZTVlaDNlZmQ4cGxsMWRhOWt1YTNpM2IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJlbWFpbCI6ImJlY2t5QHNsYW1kYXRhLmNvbSIsImlzcyI6Imh0dHBzOi8vYWNjb3VudHMuZ29vZ2xlLmNvbSIsIm5vbmNlIjoiNWQ0MTQwMmFiYzRiMmE3NmI5NzE5ZDkxMTAxN2M1OTIiLCJleHAiOjI1MjQ2MDgwMDAsImlhdCI6MTQ1NTA2OTM0OCwic3ViIjoiMTA3NjEwNzc2OTUxMDk4NjQzOTUwIn0.PUi5wySBaUSBt9lepycGton2_-plIaX14q19NB13GF8ISa9gUwnt4LeHWPst42jBeAO1GJ_thIYm6gQIIKBMtr0hucddfzu7oWXfobeFke-WwBHgmFIKSccWhI-QoNxmDbJkNolo_oPsu3DcOpFHKrnmrTWuQFZpdYciGpYi72k"
@@ -33,6 +40,10 @@ idTokenWithKeyId =
 idTokenWithEmail :: IdToken
 idTokenWithEmail =
   IdToken "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImVtYWlsIjoiYmVja3lAc2xhbWRhdGEuY29tIn0.prVDiSG7841kXU1NGTbIKG8i8amR21MBzer9Gu3gEo44FxlzKv8o16nchDjiBSdkfZoYjWsryW-y7E3KSfLWRhgN2IWVi0_ias4s5kJ4lLO1RzWx2WLiseG4KgSMnNWB0fMVKSBiZ8zqj5QxyiihAWLEanvdcebIhYwAAuQastQ"
+
+idTokenIssuedInTheFuture :: IdToken
+idTokenIssuedInTheFuture =
+  IdToken "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI5NDU0NzkyNjQyMzMta3Vtc2tvMHEzZTVlaDNlZmQ4cGxsMWRhOWt1YTNpM2IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhenAiOiI5NDU0NzkyNjQyMzMta3Vtc2tvMHEzZTVlaDNlZmQ4cGxsMWRhOWt1YTNpM2IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJlbWFpbCI6ImJlY2t5QHNsYW1kYXRhLmNvbSIsImlzcyI6Imh0dHBzOi8vYWNjb3VudHMuZ29vZ2xlLmNvbSIsIm5vbmNlIjoiNWQ0MTQwMmFiYzRiMmE3NmI5NzE5ZDkxMTAxN2M1OTIiLCJleHAiOjI1MjQ2OTQ0MDAsImlhdCI6MjUyNDYwODAwMCwic3ViIjoiMTA3NjEwNzc2OTUxMDk4NjQzOTUwIn0.hLUN9izbGLxaCOaL9x4x9gnO07WtNpHdnoAfP1HzOi3m-xeiyOKrGcVB8Y8PHlfUguhdAfKIzgLRrs_qPPBxlH_KFQnBlrpIE4dE8Jlyvfw6OEgr9V4wDSkxsqntUVE_LPc-L5kKkhHDWrTUS5S08iN2Lm9OYTzlOcyMraWE4As"
 
 expectedKeyId :: KeyId
 expectedKeyId = KeyId "a4163619423dcd3a7361acf2a641bf6f7c9e488a"
@@ -90,7 +101,7 @@ wrongJWK =
 
 main
   :: forall e
-   . Eff (console :: CONSOLE, rsaSignTime :: RSASIGNTIME, err :: EXCEPTION | e) Unit
+   . Eff (console :: CONSOLE, now :: NOW, err :: EXCEPTION | e) Unit
 main = do
   if hashNonce helloNonce == hashNonce helloNonce
      then log "Equivalent hashed nonces are equal ✔︎"
@@ -111,112 +122,136 @@ main = do
     Nothing -> log "State wasn't unbound with the wrong key ✔︎"
     Just _ -> throw "State was unbound with the wrong key ✘"
 
-  case pluckKeyId idTokenWithKeyId of
+  headerWithKeyId <- readHeader idTokenWithKeyId
+  case pluckKeyId headerWithKeyId of
     Just keyId ->
       if keyId == expectedKeyId
         then log "Key id succesfully plucked ✔︎"
         else throw "Incorrect key id plucked ✘"
     Nothing -> throw "Key id wasn't plucked ✘"
 
-  case pluckKeyId idTokenWithEmail of
+  headerWithEmail <- readHeader idTokenWithEmail
+  case pluckKeyId headerWithEmail of
     Nothing -> log "Key id wasn't plucked when there wasn't one there ✔︎"
     Just keyId -> throw "A key id was plucked somehow even though its not in the token ✘"
 
-  case pluckEmail idTokenWithEmail of
+  payloadWithEmail <- readPayload idTokenWithEmail
+  case pluckEmail payloadWithEmail of
     Just email ->
       if email == expectedEmail
         then log "Email succesfully plucked ✔︎"
         else throw "Incorrect email plucked ✘"
     Nothing -> throw "Email wasn't plucked ✘"
 
-  case pluckEmail idTokenWithKeyId of
+  payloadWithKeyId <- readPayload idTokenWithKeyId
+  case pluckEmail payloadWithKeyId of
     Nothing -> log "Email wasn't plucked when there wasn't one there ✔︎"
     Just email -> throw "An email was plucked somehow even though its not in the token ✘"
 
   verified <-
     verifyIdToken
+      gracePeriod
       idToken
       issuer
       clientId
       helloNonce
       publicJWK
-  if verified
-     then log "Token was verified with correct key and claims ✔︎"
-     else throw "Token was rejected despite correct key and claims ✘"
+  case verified of
+     Right true -> log "Token was verified with correct key and claims ✔︎"
+     _ -> throw "Token was rejected despite correct key and claims ✘"
 
   verifiedDespiteIncorrectKey <-
     verifyIdToken
+      gracePeriod
       idToken
       issuer
       clientId
       helloNonce
       wrongJWK
-  if verifiedDespiteIncorrectKey
-     then throw "Token was verified with incorrect key ✘"
-     else log "Token was rejected with incorrect key ✔︎"
+  case verifiedDespiteIncorrectKey of
+     Right true -> throw "Token was verified with incorrect key ✘"
+     _ -> log "Token was rejected with incorrect key ✔︎"
 
   verifiedDespiteWeirdKey <-
     verifyIdToken
+      gracePeriod
       weirdIdToken
       issuer
       clientId
       helloNonce
       publicJWK
-  if verifiedDespiteWeirdKey
-     then throw "Incorrect token was verified ✘"
-     else log "Token was rejected with weird key and didn't leak an exception ✔︎"
+  case verifiedDespiteWeirdKey of
+     Right true -> throw "Incorrect token was verified ✘"
+     _ -> log "Token was rejected with weird key and didn't leak an exception ✔︎"
 
   verifiedDespiteIncorrectReplay <-
     verifyIdToken
+      gracePeriod
       idToken
       issuer
       clientId
       goodbyeNonce
       publicJWK
-  if verifiedDespiteIncorrectReplay
-     then throw "Token was verified with incorrect nonce ✘"
-     else log "Token was rejected with incorrect nonce ✔︎"
+  case verifiedDespiteIncorrectReplay of
+     Right true -> throw "Token was verified with incorrect nonce ✘"
+     _ -> log "Token was rejected with incorrect nonce ✔︎"
 
   verifiedDespiteIncorrectAudience <-
     verifyIdToken
+      gracePeriod
       idToken
       issuer
       (ClientID "Wrong client id")
       helloNonce
       publicJWK
-  if verifiedDespiteIncorrectAudience
-     then throw "Token was verified with incorrect client id ✘"
-     else log "Token was rejected with incorrect client id ✔︎"
+  case verifiedDespiteIncorrectAudience of
+     Right true -> throw "Token was verified with incorrect client id ✘"
+     _ -> log "Token was rejected with incorrect client id ✔︎"
 
   verifiedDespiteIncorrectIssuer <-
     verifyIdToken
+      gracePeriod
       idToken
       (Issuer "https://wrongissuer.com")
       clientId
       helloNonce
       publicJWK
-  if verifiedDespiteIncorrectIssuer
-     then throw "Token was verified with incorrect issuer ✘"
-     else log "Token was rejected with incorrect issuer ✔︎"
+  case verifiedDespiteIncorrectIssuer of
+     Right true -> throw "Token was verified with incorrect issuer ✘"
+     _ -> log "Token was rejected with incorrect issuer ✔︎"
 
   verifiedMultipleAud <-
     verifyIdToken
+      gracePeriod
       idTokenWithMultipleAudiences
       issuer
       azp
       helloNonce
       publicJWK
-  if verifiedMultipleAud
-     then log "Token with multiple audiences was verified with correct key and claims ✔︎"
-     else throw "Token with multiple audiences was rejected despite correct key and claims ✘"
+  case verifiedMultipleAud of
+     Right true -> log "Token with multiple audiences was verified with correct key and claims ✔︎"
+     _ -> throw "Token with multiple audiences was rejected despite correct key and claims ✘"
 
   verifiedDespiteIncorrectAzp <-
     verifyIdToken
+      gracePeriod
       idTokenWithMultipleAudiencesWhichDontMatchTheAzp
       issuer
       clientId
       helloNonce
       publicJWK
-  if verifiedDespiteIncorrectAzp
-     then throw "Token with multiple audiences was verified despite incorrect azp ✘"
-     else log "Token with multiple audiences was rejected due to incorrect azp ✔︎"
+  case verifiedDespiteIncorrectAzp of
+     Right true -> throw "Token with multiple audiences was verified despite incorrect azp ✘"
+     _ -> log "Token with multiple audiences was rejected due to incorrect azp ✔︎"
+
+  verifiedDespiteBeingIssuedInTheFuture <-
+    verifyIdToken
+      gracePeriod
+      idTokenIssuedInTheFuture
+      issuer
+      clientId
+      helloNonce
+      publicJWK
+  case verifiedDespiteBeingIssuedInTheFuture of
+     Right true -> throw "Token was verified despite being issued in the future ✘"
+     _ -> log "Token was rejected due to being issued in the future ✔︎"

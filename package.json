@@ -6,7 +6,7 @@
     "test": "pulp test"
   },
   "dependencies": {
-    "jsrsasign": "^5.0.5"
+    "jsrsasign": "^6.1.4"
   },
   "devDependencies": {
     "jscs": "^2.8.0",
