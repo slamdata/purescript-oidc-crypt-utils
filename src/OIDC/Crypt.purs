@@ -1,6 +1,5 @@
 module OIDC.Crypt
-  ( RSASIGNTIME
-  , Payload
+  ( Payload
   , Header
   , hashNonce
   , bindState
@@ -19,14 +18,18 @@ import Control.Bind ((=<<))
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Exception (EXCEPTION)
 import Control.Monad.Eff.Exception as Exception
+import Control.Monad.Eff.Now (NOW)
+import Control.Monad.Eff.Now as Now
+import Data.DateTime.Instant (Instant)
+import Data.DateTime.Instant as Instant
 import Data.Either (Either)
-import Data.Maybe (Maybe(Just, Nothing))
+import Data.Int as Int
+import Data.Maybe (Maybe(Just, Nothing), maybe)
+import Data.Time.Duration (Seconds(Seconds))
+import Data.Time.Duration as Duration
 import OIDC.Crypt.JSONWebKey as J
 import OIDC.Crypt.Types
-import Prelude (bind, not, (<<<), ($), (&&))
-
-foreign import
-  data RSASIGNTIME :: !
+import Prelude (bind, not, (<<<), ($), (&&), (<$>), (<=), (>), (*))
 
 foreign import
   data RSAKey :: *
@@ -37,7 +40,12 @@ foreign import
 foreign import
   data Payload :: *
 
-type AcceptedFields = { alg :: Array String, iss :: Array Issuer }
+type AcceptedFields
+  = { alg :: Array String
+    , iss :: Array Issuer
+    , gracePeriod :: Seconds
+    , verifyAt :: Seconds
+    }
 
 foreign import
   hashNonce
@@ -61,7 +69,7 @@ foreign import
      . IdToken
     -> RSAKey
     -> AcceptedFields
-    -> Eff (err :: EXCEPTION, rsaSignTime :: RSASIGNTIME | eff) Boolean
+    -> Eff (err :: EXCEPTION | eff) Boolean
 
 foreign import
   readPayload
@@ -112,6 +120,22 @@ foreign import
     -> Payload
     -> Maybe Email
 
+foreign import
+  _pluckIAT
+    :: forall a
+     . Maybe a
+    -> (a -> Maybe a)
+    -> Payload
+    -> Maybe Int
+
+foreign import
+  _pluckExp
+    :: forall a
+     . Maybe a
+    -> (a -> Maybe a)
+    -> Payload
+    -> Maybe Int
+
 unbindState
   :: BoundStateJWS
   -> KeyString
@@ -128,21 +152,60 @@ pluckEmail
   -> Maybe Email
 pluckEmail = _pluckEmail Nothing Just
 
+pluckIAT
+  :: Payload
+  -> Maybe Int
+pluckIAT = _pluckIAT Nothing Just
+
+pluckExp
+  :: Payload
+  -> Maybe Int
+pluckExp = _pluckExp Nothing Just
+
+verifyIAT :: Seconds -> Payload -> Boolean
+verifyIAT unixTimeNow payload =
+  maybe false (_ <= unixTimeNow) (Seconds <<< Int.toNumber <$> pluckIAT payload)
+
+verifyExp :: Seconds -> Payload -> Boolean
+verifyExp unixTimeNow payload =
+  maybe false (_ > unixTimeNow) (Seconds <<< Int.toNumber <$> pluckExp payload)
+
+instantToSeconds ∷ Instant -> Seconds
+instantToSeconds = Duration.convertDuration <<< Instant.unInstant
+
 verifyIdToken
   :: forall eff
-   . IdToken
+   . Seconds
+  -> IdToken
   -> Issuer
   -> ClientID
   -> UnhashedNonce
   -> J.JSONWebKey
-  -> Eff (rsaSignTime :: RSASIGNTIME | eff) (Either Exception.Error Boolean)
-verifyIdToken idToken issuer clientId unhashedNonce providerPublicKey =
+  -> Eff (now :: NOW | eff) (Either Exception.Error Boolean)
+verifyIdToken gracePeriod idToken issuer clientId unhashedNonce providerPublicKey =
   Exception.try do
     payload <- readPayload idToken
+    unixTimeNow <- instantToSeconds <$> Now.now
     when
       (not $ verifyNonce unhashedNonce payload)
       (Exception.throw "Nonce doesn't match, possible replay attack.")
     when
       (not $ verifyAudience clientId payload)
       (Exception.throw "Audience (client id) doesn't match.")
-    verifyJWT idToken (getKey providerPublicKey) { alg: ["RS256"], iss: [issuer] }
+    when
+      (not $ verifyAudience clientId payload)
+      (Exception.throw "Audience (client id) doesn't match.")
+    when
+      (not $ verifyIAT unixTimeNow payload)
+      (Exception.throw "Token issued in the future. Check the time on your computer.")
+    when
+      (not $ verifyExp unixTimeNow payload)
+      (Exception.throw "Token expired.")
+    verifyJWT
+      idToken
+      (getKey providerPublicKey)
+      { alg: ["RS256"]
+      , iss: [issuer]
+      , gracePeriod: gracePeriod
+      , verifyAt: unixTimeNow
+      }

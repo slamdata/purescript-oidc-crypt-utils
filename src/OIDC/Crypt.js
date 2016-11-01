@@ -2,6 +2,16 @@
 
 var jsrsasign = require("jsrsasign");
 
+var pluck = function (propertyString) {
+  return function (nothing) {
+    return function (just) {
+      return function (object) {
+        return propertyString in object ? just(object[propertyString]) : nothing;
+      };
+    };
+  };
+};
+
 // Effectful
 
 exports.readPayload = function (jwt) {
@@ -76,18 +86,10 @@ exports._unbindState = function (nothing) {
   };
 };
 
-exports._pluckEmail = function (nothing) {
-  return function (just) {
-    return function (payload) {
-      return "email" in payload ? just(payload.email) : nothing;
-    };
-  };
-};
+exports._pluckEmail = pluck("email");
 
-exports._pluckKeyId = function (nothing) {
-  return function (just) {
-    return function (header) {
-      return "kid" in header ? just(header.kid) : nothing;
-    };
-  };
-};
+exports._pluckKeyId = pluck("kid");
+
+exports._pluckIAT = pluck("iat");
+
+exports._pluckExp = pluck("exp");

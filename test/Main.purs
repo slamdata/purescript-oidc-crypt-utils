@@ -1,15 +1,20 @@
 module Test.Main where
 
-import Prelude (Unit, bind, (==), (/=), ($))
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE, log)
 import Control.Monad.Eff.Exception (EXCEPTION, throw)
-import Data.Maybe (Maybe(..))
-import OIDC.Crypt
-import Data.Either (Either(Right), fromRight)
+import Control.Monad.Eff.Now (NOW)
+import Data.Time.Duration (Seconds(Seconds))
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Parser (jsonParser)
+import Data.Either (Either(Right), fromRight)
+import Data.Maybe (Maybe(..))
+import OIDC.Crypt
 import Partial.Unsafe (unsafePartial)
+import Prelude (Unit, bind, (==), (/=), ($))
+
+gracePeriod :: Seconds
+gracePeriod = Seconds 1.0
 
 -- Token generated using https://jwt.io/
 -- At http://jwt.io select RS256 and use default public and private PEMs to
@@ -96,7 +101,7 @@ wrongJWK =
 
 main
   :: forall e
-   . Eff (console :: CONSOLE, rsaSignTime :: RSASIGNTIME, err :: EXCEPTION | e) Unit
+   . Eff (console :: CONSOLE, now :: NOW, err :: EXCEPTION | e) Unit
 main = do
   if hashNonce helloNonce == hashNonce helloNonce
      then log "Equivalent hashed nonces are equal ✔︎"
@@ -145,6 +150,7 @@ main = do
 
   verified <-
     verifyIdToken
+      gracePeriod
       idToken
       issuer
       clientId
@@ -156,6 +162,7 @@ main = do
 
   verifiedDespiteIncorrectKey <-
     verifyIdToken
+      gracePeriod
       idToken
       issuer
       clientId
@@ -167,6 +174,7 @@ main = do
 
   verifiedDespiteWeirdKey <-
     verifyIdToken
+      gracePeriod
       weirdIdToken
       issuer
       clientId
@@ -178,6 +186,7 @@ main = do
 
   verifiedDespiteIncorrectReplay <-
     verifyIdToken
+      gracePeriod
       idToken
       issuer
       clientId
@@ -189,6 +198,7 @@ main = do
 
   verifiedDespiteIncorrectAudience <-
     verifyIdToken
+      gracePeriod
       idToken
       issuer
       (ClientID "Wrong client id")
@@ -200,6 +210,7 @@ main = do
 
   verifiedDespiteIncorrectIssuer <-
     verifyIdToken
+      gracePeriod
       idToken
       (Issuer "https://wrongissuer.com")
       clientId
@@ -211,6 +222,7 @@ main = do
 
   verifiedMultipleAud <-
     verifyIdToken
+      gracePeriod
       idTokenWithMultipleAudiences
       issuer
       azp
@@ -222,6 +234,7 @@ main = do
 
   verifiedDespiteIncorrectAzp <-
     verifyIdToken
+      gracePeriod
       idTokenWithMultipleAudiencesWhichDontMatchTheAzp
       issuer
       clientId
@@ -233,6 +246,7 @@ main = do
 
   verifiedDespiteBeingIssuedInTheFuture <-
     verifyIdToken
+      gracePeriod
       idTokenIssuedInTheFuture
       issuer
       clientId
