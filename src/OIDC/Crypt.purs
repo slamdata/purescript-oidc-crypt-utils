@@ -193,9 +193,6 @@ verifyIdToken gracePeriod idToken issuer clientId unhashedNonce providerPublicKe
       (not $ verifyAudience clientId payload)
       (Exception.throw "Audience (client id) doesn't match.")
     when
-      (not $ verifyAudience clientId payload)
-      (Exception.throw "Audience (client id) doesn't match.")
-    when
       (not $ verifyIAT unixTimeNow payload)
       (Exception.throw "Token issued in the future. Check the time on your computer.")
     when
