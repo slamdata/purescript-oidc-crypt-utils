@@ -13,13 +13,14 @@ module OIDC.Crypt
   , module J
   ) where
 
-import Control.Applicative (when)
-import Control.Bind ((=<<))
+import Prelude (not, when, bind, ($), (<$>), (<<<), (>), (<=))
+
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Exception (EXCEPTION)
 import Control.Monad.Eff.Exception as Exception
 import Control.Monad.Eff.Now (NOW)
 import Control.Monad.Eff.Now as Now
+
 import Data.DateTime.Instant (Instant)
 import Data.DateTime.Instant as Instant
 import Data.Either (Either)
@@ -27,9 +28,9 @@ import Data.Int as Int
 import Data.Maybe (Maybe(Just, Nothing), maybe)
 import Data.Time.Duration (Seconds(Seconds))
 import Data.Time.Duration as Duration
+
 import OIDC.Crypt.JSONWebKey as J
 import OIDC.Crypt.Types
-import Prelude (bind, not, (<<<), ($), (&&), (<$>), (<=), (>), (*))
 
 foreign import
   data RSAKey :: *
