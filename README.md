@@ -1,8 +1,7 @@
 # purescript-oidc-crypt-utils
 
-[![Latest release](http://img.shields.io/bower/v/purescript-oidc-crypt-utils.svg)](https://github.com/slamdata/purescript-oidc-crypt-utils/releases)
-[![Build Status](https://travis-ci.org/slamdata/purescript-oidc-crypt-utils.svg?branch=master)](https://travis-ci.org/slamdata/purescript-oidc-crypt-utils)
-[![Dependency Status](https://www.versioneye.com/user/projects/579b3b303815c80028e2f468/badge.svg?style=flat)](https://www.versioneye.com/user/projects/579b3b303815c80028e2f468)
+[![Latest release](http://img.shields.io/github/release/slamdata/purescript-oidc-crypt-utils.svg)](https://github.com/slamdata/purescript-oidc-crypt-utils/releases)
+[![Build status](https://travis-ci.org/slamdata/purescript-oidc-crypt-utils.svg?branch=master)](https://travis-ci.org/slamdata/purescript-oidc-crypt-utils)
 
 Cryptographic utilities for performing OpenIDConnect as a client.
 

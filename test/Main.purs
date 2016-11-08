@@ -1,17 +1,22 @@
 module Test.Main where
 
+import Prelude (Unit, bind, (==), (/=), ($))
+
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE, log)
 import Control.Monad.Eff.Exception (EXCEPTION, throw)
 import Control.Monad.Eff.Now (NOW)
-import Data.Time.Duration (Seconds(Seconds))
+
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Parser (jsonParser)
 import Data.Either (Either(Right), fromRight)
 import Data.Maybe (Maybe(..))
+import Data.Time.Duration (Seconds(Seconds))
+
 import OIDC.Crypt
+
 import Partial.Unsafe (unsafePartial)
-import Prelude (Unit, bind, (==), (/=), ($))
+
 
 gracePeriod :: Seconds
 gracePeriod = Seconds 1.0
