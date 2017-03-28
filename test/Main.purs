@@ -56,9 +56,9 @@ expectedKeyId = KeyId "a4163619423dcd3a7361acf2a641bf6f7c9e488a"
 expectedEmail :: Email
 expectedEmail = Email "becky@slamdata.com"
 
-azp :: ClientID
+azp :: ClientId
 azp =
-  ClientID "aud1"
+  ClientId "aud1"
 
 state :: StateString
 state =
@@ -76,9 +76,9 @@ issuer :: Issuer
 issuer =
   Issuer "https://accounts.google.com"
 
-clientId :: ClientID
+clientId :: ClientId
 clientId =
-  ClientID "945479264233-kumsko0q3e5eh3efd8pll1da9kua3i3b.apps.googleusercontent.com"
+  ClientId "945479264233-kumsko0q3e5eh3efd8pll1da9kua3i3b.apps.googleusercontent.com"
 
 helloNonce :: UnhashedNonce
 helloNonce =
@@ -206,7 +206,7 @@ main = do
       gracePeriod
       idToken
       issuer
-      (ClientID "Wrong client id")
+      (ClientId "Wrong client id")
       helloNonce
       publicJWK
   case verifiedDespiteIncorrectAudience of

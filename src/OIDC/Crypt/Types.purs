@@ -1,102 +1,86 @@
 module OIDC.Crypt.Types where
 
 import Prelude
+import Data.Argonaut as Argonaut
+import Data.Newtype as Newtype
 
 newtype UnhashedNonce = UnhashedNonce String
-runUnhashedNonce :: UnhashedNonce -> String
-runUnhashedNonce (UnhashedNonce s) = s
 
-instance eqUnhashedNonce :: Eq UnhashedNonce where
-  eq (UnhashedNonce s) (UnhashedNonce ss) = s == ss
-instance ordUnhashedNonce :: Ord UnhashedNonce where
-  compare (UnhashedNonce s) (UnhashedNonce ss) = compare s ss
-
+derive instance newtypeUnhashedNonce :: Newtype.Newtype UnhashedNonce _
+derive newtype instance eqUnhashedNonce :: Eq UnhashedNonce
+derive newtype instance ordUnhashedNonce :: Ord UnhashedNonce
+derive newtype instance encodeJsonUnhashedNonce :: Argonaut.EncodeJson UnhashedNonce
+derive newtype instance decodeJsonUnhashedNonce :: Argonaut.DecodeJson UnhashedNonce
 
 newtype HashedNonce = HashedNonce String
-runHashedNonce :: HashedNonce -> String
-runHashedNonce (HashedNonce s) = s
 
-instance eqHashedNonce :: Eq HashedNonce where
-  eq (HashedNonce s) (HashedNonce ss) = s == ss
-instance ordHashedNonce :: Ord HashedNonce where
-  compare (HashedNonce s) (HashedNonce ss) = compare s ss
-
+derive instance newtypeHashedNonce :: Newtype.Newtype HashedNonce _
+derive newtype instance eqHashedNonce :: Eq HashedNonce
+derive newtype instance ordHashedNonce :: Ord HashedNonce
+derive newtype instance encodeJsonHashedNonce :: Argonaut.EncodeJson HashedNonce
+derive newtype instance decodeJsonHashedNonce :: Argonaut.DecodeJson HashedNonce
 
 newtype StateString = StateString String
-runStateString :: StateString -> String
-runStateString (StateString s) = s
 
-instance eqStateString :: Eq StateString where
-  eq (StateString s) (StateString ss) = s == ss
-instance ordStateString :: Ord StateString where
-  compare (StateString s) (StateString ss) = compare s ss
-
+derive instance newtypeStateString :: Newtype.Newtype StateString _
+derive newtype instance eqStateString :: Eq StateString
+derive newtype instance ordStateString :: Ord StateString
+derive newtype instance encodeJsonStateString :: Argonaut.EncodeJson StateString
+derive newtype instance decodeJsonStateString :: Argonaut.DecodeJson StateString
 
 newtype BoundStateJWS = BoundStateJWS String
-runBoundStateJWS :: BoundStateJWS -> String
-runBoundStateJWS (BoundStateJWS s) = s
 
-instance eqBoundStateJWS :: Eq BoundStateJWS where
-  eq (BoundStateJWS s) (BoundStateJWS ss) = s == ss
-instance ordBoundStateJWS :: Ord BoundStateJWS where
-  compare (BoundStateJWS s) (BoundStateJWS ss) = compare s ss
-
+derive instance newtypeBoundStateJWS :: Newtype.Newtype BoundStateJWS _
+derive newtype instance eqBoundStateJWS :: Eq BoundStateJWS
+derive newtype instance ordBoundStateJWS :: Ord BoundStateJWS
+derive newtype instance encodeJsonBoundStateJWS :: Argonaut.EncodeJson BoundStateJWS
+derive newtype instance decodeJsonBoundStateJWS :: Argonaut.DecodeJson BoundStateJWS
 
 newtype IdToken = IdToken String
-runIdToken :: IdToken -> String
-runIdToken (IdToken s) = s
 
-instance eqIdToken :: Eq IdToken where
-  eq (IdToken s) (IdToken ss) = s == ss
-instance ordIdToken :: Ord IdToken where
-  compare (IdToken s) (IdToken ss) = compare s ss
-
+derive instance newtypeIdToken :: Newtype.Newtype IdToken _
+derive newtype instance eqIdToken :: Eq IdToken
+derive newtype instance ordIdToken :: Ord IdToken
+derive newtype instance encodeJsonIdToken :: Argonaut.EncodeJson IdToken
+derive newtype instance decodeJsonIdToken :: Argonaut.DecodeJson IdToken
 
 newtype Issuer = Issuer String
-runIssuer :: Issuer -> String
-runIssuer (Issuer s) = s
 
-instance eqIssuer :: Eq Issuer where
-  eq (Issuer s) (Issuer ss) = s == ss
-instance ordIssuer :: Ord Issuer where
-  compare (Issuer s) (Issuer ss) = compare s ss
+derive instance newtypeIssuer :: Newtype.Newtype Issuer _
+derive newtype instance eqIssuer :: Eq Issuer
+derive newtype instance ordIssuer :: Ord Issuer
+derive newtype instance encodeJsonIssuer :: Argonaut.EncodeJson Issuer
+derive newtype instance decodeJsonIssuer :: Argonaut.DecodeJson Issuer
 
+newtype ClientId = ClientId String
 
-newtype ClientID = ClientID String
-runClientID :: ClientID -> String
-runClientID (ClientID s) = s
-
-instance eqClientID :: Eq ClientID where
-  eq (ClientID s) (ClientID ss) = s == ss
-instance ordClientID :: Ord ClientID where
-  compare (ClientID s) (ClientID ss) = compare s ss
-
+derive instance newtypeClientId :: Newtype.Newtype ClientId _
+derive newtype instance eqClientId :: Eq ClientId
+derive newtype instance ordClientId :: Ord ClientId
+derive newtype instance encodeJsonClientId :: Argonaut.EncodeJson ClientId
+derive newtype instance decodeJsonClientId :: Argonaut.DecodeJson ClientId
 
 newtype KeyString = KeyString String
-runKey :: KeyString -> String
-runKey (KeyString s) = s
 
-instance eqKeyString :: Eq KeyString where
-  eq (KeyString s) (KeyString ss) = s == ss
-instance ordKeyString :: Ord KeyString where
-  compare (KeyString s) (KeyString ss) = compare s ss
-
+derive instance newtypeKeyString :: Newtype.Newtype KeyString _
+derive newtype instance eqKeyString :: Eq KeyString
+derive newtype instance ordKeyString :: Ord KeyString
+derive newtype instance encodeJsonKeyString :: Argonaut.EncodeJson KeyString
+derive newtype instance decodeJsonKeyString :: Argonaut.DecodeJson KeyString
 
 newtype KeyId = KeyId String
-runKeyId :: KeyId -> String
-runKeyId (KeyId s) = s
 
-instance eqKeyId :: Eq KeyId where
-  eq (KeyId s) (KeyId ss) = s == ss
-instance ordKeyId :: Ord KeyId where
-  compare (KeyId s) (KeyId ss) = compare s ss
-
+derive instance newtypeKeyId :: Newtype.Newtype KeyId _
+derive newtype instance eqKeyId :: Eq KeyId
+derive newtype instance ordKeyId :: Ord KeyId
+derive newtype instance encodeJsonKeyId :: Argonaut.EncodeJson KeyId
+derive newtype instance decodeJsonKeyId :: Argonaut.DecodeJson KeyId
 
 newtype Email = Email String
-runEmail :: Email -> String
-runEmail (Email s) = s
 
-instance eqEmail :: Eq Email where
-  eq (Email s) (Email ss) = s == ss
-instance ordEmail :: Ord Email where
-  compare (Email s) (Email ss) = compare s ss
+derive instance newtypeEmail :: Newtype.Newtype Email _
+derive newtype instance eqEmail :: Eq Email
+derive newtype instance ordEmail :: Ord Email
+derive newtype instance encodeJsonEmail :: Argonaut.EncodeJson Email
+derive newtype instance decodeJsonEmail :: Argonaut.DecodeJson Email
+

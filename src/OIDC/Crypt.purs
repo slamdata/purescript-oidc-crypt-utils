@@ -101,7 +101,7 @@ foreign import
 
 foreign import
   verifyAudience
-    :: ClientID
+    :: ClientId
     -> Payload
     -> Boolean
 
@@ -179,7 +179,7 @@ verifyIdToken
    . Seconds
   -> IdToken
   -> Issuer
-  -> ClientID
+  -> ClientId
   -> UnhashedNonce
   -> J.JSONWebKey
   -> Eff (now :: NOW | eff) (Either Exception.Error Boolean)

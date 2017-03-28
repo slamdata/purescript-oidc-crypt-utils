@@ -23,10 +23,10 @@
     "purescript-argonaut": "^2.0.0",
     "purescript-integers": "^2.0.0",
     "purescript-datetime": "^2.0.0",
-    "purescript-now": "^2.0.0"
+    "purescript-now": "^2.0.0",
+    "purescript-newtype": "^1.3.0"
   },
   "devDependencies": {
-    "purescript-console": "^2.0.0",
-    "purescript-exceptions": "^2.0.0"
+    "purescript-console": "^2.0.0"
   }
 }
