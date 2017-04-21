@@ -1,6 +1,6 @@
 module Test.Main where
 
-import Prelude (Unit, bind, (==), (/=), ($))
+import Prelude (Unit, discard, bind, (==), (/=), ($))
 
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE, log)
@@ -106,7 +106,7 @@ wrongJWK =
 
 main
   :: forall e
-   . Eff (console :: CONSOLE, now :: NOW, err :: EXCEPTION | e) Unit
+   . Eff (console :: CONSOLE, now :: NOW, exception :: EXCEPTION | e) Unit
 main = do
   if hashNonce helloNonce == hashNonce helloNonce
      then log "Equivalent hashed nonces are equal ✔︎"
