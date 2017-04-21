@@ -13,7 +13,7 @@ module OIDC.Crypt
   , module J
   ) where
 
-import Prelude (not, when, bind, ($), (<$>), (<<<), (>), (<=))
+import Prelude (not, when, discard, bind, ($), (<$>), (<<<), (>), (<=))
 
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Exception (EXCEPTION)
@@ -33,13 +33,13 @@ import OIDC.Crypt.JSONWebKey as J
 import OIDC.Crypt.Types
 
 foreign import
-  data RSAKey :: *
+  data RSAKey :: Type
 
 foreign import
-  data Header :: *
+  data Header :: Type
 
 foreign import
-  data Payload :: *
+  data Payload :: Type
 
 type AcceptedFields
   = { alg :: Array String
@@ -70,19 +70,19 @@ foreign import
      . IdToken
     -> RSAKey
     -> AcceptedFields
-    -> Eff (err :: EXCEPTION | eff) Boolean
+    -> Eff (exception :: EXCEPTION | eff) Boolean
 
 foreign import
   readPayload
     :: forall eff
      . IdToken
-    -> Eff (err :: EXCEPTION | eff) Payload
+    -> Eff (exception :: EXCEPTION | eff) Payload
 
 foreign import
   readHeader
     :: forall eff
      . IdToken
-    -> Eff (err :: EXCEPTION | eff) Header
+    -> Eff (exception :: EXCEPTION | eff) Header
 
 foreign import
   verifyNonce
