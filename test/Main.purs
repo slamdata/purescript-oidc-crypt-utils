@@ -50,6 +50,10 @@ idTokenIssuedInTheFuture :: IdToken
 idTokenIssuedInTheFuture =
   IdToken "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI5NDU0NzkyNjQyMzMta3Vtc2tvMHEzZTVlaDNlZmQ4cGxsMWRhOWt1YTNpM2IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhenAiOiI5NDU0NzkyNjQyMzMta3Vtc2tvMHEzZTVlaDNlZmQ4cGxsMWRhOWt1YTNpM2IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJlbWFpbCI6ImJlY2t5QHNsYW1kYXRhLmNvbSIsImlzcyI6Imh0dHBzOi8vYWNjb3VudHMuZ29vZ2xlLmNvbSIsIm5vbmNlIjoiNWQ0MTQwMmFiYzRiMmE3NmI5NzE5ZDkxMTAxN2M1OTIiLCJleHAiOjI1MjQ2OTQ0MDAsImlhdCI6MjUyNDYwODAwMCwic3ViIjoiMTA3NjEwNzc2OTUxMDk4NjQzOTUwIn0.hLUN9izbGLxaCOaL9x4x9gnO07WtNpHdnoAfP1HzOi3m-xeiyOKrGcVB8Y8PHlfUguhdAfKIzgLRrs_qPPBxlH_KFQnBlrpIE4dE8Jlyvfw6OEgr9V4wDSkxsqntUVE_LPc-L5kKkhHDWrTUS5S08iN2Lm9OYTzlOcyMraWE4As"
 
+expiredIdToken :: IdToken
+expiredIdToken =
+  IdToken "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI5NDU0NzkyNjQyMzMta3Vtc2tvMHEzZTVlaDNlZmQ4cGxsMWRhOWt1YTNpM2IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhenAiOiI5NDU0NzkyNjQyMzMta3Vtc2tvMHEzZTVlaDNlZmQ4cGxsMWRhOWt1YTNpM2IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJlbWFpbCI6ImJlY2t5QHNsYW1kYXRhLmNvbSIsImlzcyI6Imh0dHBzOi8vYWNjb3VudHMuZ29vZ2xlLmNvbSIsIm5vbmNlIjoiNWQ0MTQwMmFiYzRiMmE3NmI5NzE5ZDkxMTAxN2M1OTIiLCJleHAiOjE0NTUwNjk1MDAsImlhdCI6MTQ1NTA2OTM0OCwic3ViIjoiMTA3NjEwNzc2OTUxMDk4NjQzOTUwIn0.sRrNAIsgN0zeu1A-pxz7v7SffMlt9vVVNSf-mI1OeiUDT-n2dKtr_84jGdxMIhVdr3NlkNNY_WgG88UdgF8hSuRr6-Xr2kw5eXhz_WZmJkS_kSwwIZ0dDSxVYICayKQMb5PBdhJaOERHmcG-Bz6dE8ODTpBhbMpAggfFCxDPvGc"
+
 expectedKeyId :: KeyId
 expectedKeyId = KeyId "a4163619423dcd3a7361acf2a641bf6f7c9e488a"
 
@@ -260,3 +264,39 @@ main = do
   case verifiedDespiteBeingIssuedInTheFuture of
      Right true -> throw "Token was verified despite being issued in the future ✘"
      _ -> log "Token was rejected due to being issued in the future ✔︎"
+
+  verifiedDespiteBeingExpired <-
+    verifyIdToken
+      gracePeriod
+      expiredIdToken
+      issuer
+      clientId
+      helloNonce
+      publicJWK
+  case verifiedDespiteBeingExpired of
+     Right true -> throw "Token was verified despite being expired ✘"
+     _ -> log "Token was rejected due to being expired ✔︎"
+
+  verifiedBecauseItsWithinGracePeriod <-
+    verifyIdToken
+      (Seconds 1892000000.0)
+      idTokenIssuedInTheFuture
+      issuer
+      clientId
+      helloNonce
+      publicJWK
+  case verifiedBecauseItsWithinGracePeriod of
+    Right true -> log "Token issued in future was verified because it was issued within grace period ✔︎"
+    _ -> throw "Token issued in future was rejected despite being issued within grace period ✘"
+
+  alsoVerifiedBecauseItsWithinGracePeriod <-
+    verifyIdToken
+      (Seconds 1892000000.0)
+      expiredIdToken
+      issuer
+      clientId
+      helloNonce
+      publicJWK
+  case alsoVerifiedBecauseItsWithinGracePeriod of
+    Right true -> log "Expired token was verified because it was issued within grace period ✔︎"
+    _ -> throw "Expired token was rejected despite being issued within grace period ✘"
