@@ -13,7 +13,7 @@ module OIDC.Crypt
   , module J
   ) where
 
-import Prelude (not, when, discard, bind, ($), (<$>), (<<<), (>), (<=))
+import Prelude (not, when, discard, bind, ($), (<$>), (<<<), (>), (<=), (+), (-))
 
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Exception (EXCEPTION)
@@ -163,13 +163,19 @@ pluckExp
   -> Maybe Int
 pluckExp = _pluckExp Nothing Just
 
-verifyIAT :: Seconds -> Payload -> Boolean
-verifyIAT unixTimeNow payload =
-  maybe false (_ <= unixTimeNow) (Seconds <<< Int.toNumber <$> pluckIAT payload)
+verifyIAT :: Seconds -> Seconds -> Payload -> Boolean
+verifyIAT gracePeriod unixTimeNow payload =
+  maybe
+    false
+    (_ <= unixTimeNow + gracePeriod)
+    (Seconds <<< Int.toNumber <$> pluckIAT payload)
 
-verifyExp :: Seconds -> Payload -> Boolean
-verifyExp unixTimeNow payload =
-  maybe false (_ > unixTimeNow) (Seconds <<< Int.toNumber <$> pluckExp payload)
+verifyExp :: Seconds -> Seconds -> Payload -> Boolean
+verifyExp gracePeriod unixTimeNow payload =
+  maybe
+    false
+    (_ > unixTimeNow - gracePeriod)
+    (Seconds <<< Int.toNumber <$> pluckExp payload)
 
 instantToSeconds ∷ Instant -> Seconds
 instantToSeconds = Duration.convertDuration <<< Instant.unInstant
@@ -194,10 +200,10 @@ verifyIdToken gracePeriod idToken issuer clientId unhashedNonce providerPublicKe
       (not $ verifyAudience clientId payload)
       (Exception.throw "Audience (client id) doesn't match.")
     when
-      (not $ verifyIAT unixTimeNow payload)
+      (not $ verifyIAT gracePeriod unixTimeNow payload)
       (Exception.throw "Token issued in the future. Check the time on your computer.")
     when
-      (not $ verifyExp unixTimeNow payload)
+      (not $ verifyExp gracePeriod unixTimeNow payload)
       (Exception.throw "Token expired.")
     verifyJWT
       idToken
